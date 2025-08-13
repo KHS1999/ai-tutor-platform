@@ -50,6 +50,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   conversations Conversation[]
+  chatMessages  ChatMessage[] // Added for direct link to chat messages
 }
 
 model VerificationToken {
@@ -66,6 +67,7 @@ model Conversation {
   createdAt DateTime  @default(now())
   messages  Message[]
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatMessages ChatMessage[] // Added for reverse relation
 }
 
 model Message {
@@ -74,5 +76,17 @@ model Message {
   content        String       @db.Text
   role           String       // "user" or "assistant"
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model ChatMessage {
+  id            String    @id @default(cuid())
+  userId        String
+  conversationId String? // Optional, for linking to a specific conversation if needed
+  sender        String    // 'user' or 'ai'
+  text          String    @db.Text
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation  Conversation? @relation(fields: [conversationId], references: [id])
 }
